@@ -24,7 +24,7 @@ jobs:
     - name: Build e Análise SonarCloud
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=turisco-tech_poc-agenda-api
+      run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=turisco-tech_poc-agenda-api -Dsonar.organization=turisco-tech -Dsonar.host.url=https://sonarcloud.io
 
     - name: Configurar Credenciais AWS
       uses: aws-actions/configure-aws-credentials@v2
