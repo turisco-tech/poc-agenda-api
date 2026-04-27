@@ -1,0 +1,57 @@
+name: Pipeline API Spring Boot
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-test-sonar-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout do código
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Setup Java 21 Corretto
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+        distribution: 'corretto'
+        cache: maven
+
+    - name: Build e Análise SonarCloud
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=turisco-tech_poc-agenda-api
+
+    - name: Configurar Credenciais AWS
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Login no Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, Tag, e Push da Imagem
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: poc-agenda-api
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+    - name: Tratamento de Erros e Logs Críticos
+      if: failure()
+      run: |
+        echo "::error::Falha detectada na esteira! Coletando logs do ambiente de build..."
+        docker system df
+        docker ps -a
+        echo "Exibindo os últimos eventos do sistema para diagnóstico:"
+        dmesg | tail -n 20
