@@ -1,11 +1,11 @@
-package com.agenda.demo.rest;
+package com.agenda.demo.adapter.input;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class AgendaController {
+public class HealthCheckController {
 
     @GetMapping("/api/status")
     public ResponseEntity<String> status() {

@@ -9,6 +9,7 @@ import com.agenda.demo.core.app.usecases.CriarContatoUseCase;
 import com.agenda.demo.core.app.usecases.DeletarContatoUseCase;
 import com.agenda.demo.core.app.usecases.ListarContatosUseCase;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@CrossOrigin(origins = "*")// Libera o CORS para qualquer origem (Ideal para MVP/Dev)
 @RequestMapping("/api/contatos")
 public class ContatoController {
 
