@@ -55,3 +55,21 @@ jobs:
         docker ps -a
         echo "Exibindo os últimos eventos do sistema para diagnóstico:"
         dmesg | tail -n 20
+
+    # NOVO PASSO 1: Injeta a nova imagem Docker gerada dentro do seu arquivo JSON
+    - name: Preencher o novo ID da imagem na Task Definition
+      id: render-task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: .aws/task-definition.json
+        container-name: api-container # Nome exato do container definido na AWS
+        image: ${{ steps.login-ecr.outputs.registry }}/poc-agenda-api:${{ github.sha }}
+
+    # NOVO PASSO 2: Envia o JSON atualizado para a AWS e atualiza o Service
+    - name: Deploy da nova Task Definition no Amazon ECS
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+        service: poc-agenda-api-service
+        cluster: poc-agenda-cluster
+        wait-for-service-stability: true

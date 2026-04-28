@@ -9,7 +9,7 @@ public class AgendaController {
 
     @GetMapping("/api/status")
     public ResponseEntity<String> status() {
-        return ResponseEntity.ok("API da Agenda funcionando!");
+        return ResponseEntity.ok("API da Agenda Atualizada via CD Automático!");
     }
 
 }
