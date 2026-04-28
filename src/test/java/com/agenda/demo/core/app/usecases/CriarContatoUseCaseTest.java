@@ -5,6 +5,7 @@ import com.agenda.demo.core.app.dtos.CriarContatoResponse;
 import com.agenda.demo.core.domain.entities.Contato;
 import com.agenda.demo.core.domain.repos.ContatoRepository;
 import org.junit.jupiter.api.Test;
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -17,6 +18,11 @@ class CriarContatoUseCaseTest {
             @Override
             public Contato salvar(Contato contato) {
                 return contato; // Apenas devolve o contato para fingir que salvou
+            }
+
+            @Override
+            public List<Contato> listarTodos() {
+                return List.of();
             }
         };
         CriarContatoUseCase useCase = new CriarContatoUseCase(fakeRepository);
