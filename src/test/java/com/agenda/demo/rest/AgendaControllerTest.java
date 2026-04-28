@@ -20,6 +20,6 @@ class AgendaControllerTest {
     void deveRetornarStatusDaApi() throws Exception {
         mockMvc.perform(get("/api/status"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("API da Agenda funcionando!"));
+                .andExpect(content().string("API da Agenda Atualizada via CD Automático!"));
     }
 }
