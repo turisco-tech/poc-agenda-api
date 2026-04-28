@@ -1,0 +1,33 @@
+package com.agenda.demo.core.app.usecases;
+
+import com.agenda.demo.core.app.dtos.CriarContatoRequest;
+import com.agenda.demo.core.app.dtos.CriarContatoResponse;
+import com.agenda.demo.core.domain.entities.Contato;
+import com.agenda.demo.core.domain.repos.ContatoRepository;
+import com.agenda.demo.core.domain.vos.Email;
+
+public class CriarContatoUseCase {
+
+    private final ContatoRepository repository;
+
+    // Injeção de dependência via construtor (Inversão de Controle)
+    public CriarContatoUseCase(ContatoRepository repository) {
+        this.repository = repository;
+    }
+
+    public CriarContatoResponse executar(CriarContatoRequest request) {
+        // 1. Instanciar Value Objects e Entidades (As regras de negócio validam os dados aqui)
+        Email email = new Email(request.email());
+        Contato novoContato = new Contato(request.nome(), email);
+
+        // 2. Salvar usando o contrato (Não sabemos se é SQL, NoSQL ou memória, e não importa!)
+        Contato contatoSalvo = repository.salvar(novoContato);
+
+        // 3. Retornar um DTO puro, protegendo a Entidade do Domínio
+        return new CriarContatoResponse(
+                contatoSalvo.getId(),
+                contatoSalvo.getNome(),
+                contatoSalvo.getEmail().valor()
+        );
+    }
+}
