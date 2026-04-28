@@ -1,21 +1,23 @@
 package com.agenda.demo.core.app.usecases;
 
-import com.agenda.demo.core.app.dtos.ContatoDTO;
 import com.agenda.demo.core.domain.entities.Contato;
 import com.agenda.demo.core.domain.repos.ContatoRepository;
-import com.agenda.demo.core.domain.vos.Email;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ListarContatosUseCaseTest {
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class DeletarContatoUseCaseTest {
 
     @Test
-    void deveRetornarListaDeContatosDto() {
+    void deveDeletarContatoComSucesso() {
         // Arrange
+        UUID idParaDeletar = UUID.randomUUID();
+        final boolean[] deletado = {false}; // Flag para verificar se o método do banco foi chamado
+
         ContatoRepository fakeRepository = new ContatoRepository() {
             @Override
             public Contato salvar(Contato contato) {
@@ -24,7 +26,7 @@ class ListarContatosUseCaseTest {
 
             @Override
             public List<Contato> listarTodos() {
-                return List.of(new Contato("Marcos", new Email("teste@teste.com")));
+                return null;
             }
 
             @Override
@@ -34,16 +36,18 @@ class ListarContatosUseCaseTest {
 
             @Override
             public void deletar(UUID id) {
-
+                if (id.equals(idParaDeletar)) {
+                    deletado[0] = true;
+                }
             }
         };
-        ListarContatosUseCase useCase = new ListarContatosUseCase(fakeRepository);
+
+        DeletarContatoUseCase useCase = new DeletarContatoUseCase(fakeRepository);
 
         // Act
-        List<ContatoDTO> resultado = useCase.executar();
+        useCase.executar(idParaDeletar);
 
         // Assert
-        assertEquals(1, resultado.size());
-        assertEquals("Marcos", resultado.get(0).nome());
+        assertTrue(deletado[0], "O método deletar do repositório deveria ter sido chamado com o ID correto");
     }
 }

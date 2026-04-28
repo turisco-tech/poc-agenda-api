@@ -6,6 +6,8 @@ import com.agenda.demo.core.domain.entities.Contato;
 import com.agenda.demo.core.domain.repos.ContatoRepository;
 import org.junit.jupiter.api.Test;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -23,6 +25,16 @@ class CriarContatoUseCaseTest {
             @Override
             public List<Contato> listarTodos() {
                 return List.of();
+            }
+
+            @Override
+            public Optional<Contato> buscarPorId(UUID id) {
+                return Optional.empty();
+            }
+
+            @Override
+            public void deletar(UUID id) {
+
             }
         };
         CriarContatoUseCase useCase = new CriarContatoUseCase(fakeRepository);

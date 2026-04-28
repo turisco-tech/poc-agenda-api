@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -26,5 +27,15 @@ public class ContatoRepositoryInMemory implements ContatoRepository {
     @Override
     public List<Contato> listarTodos() {
         return new ArrayList<>(db.values());
+    }
+
+    @Override
+    public Optional<Contato> buscarPorId(UUID id) {
+        return Optional.ofNullable(db.get(id));
+    }
+
+    @Override
+    public void deletar(UUID id) {
+        db.remove(id);
     }
 }

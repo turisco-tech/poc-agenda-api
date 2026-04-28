@@ -51,4 +51,11 @@ public class Contato {
         }
         this.email = novoEmail;
     }
+
+    public void atualizarNome(String novoNome) {
+        if (novoNome == null) {
+            throw new IllegalArgumentException("O novo nome não pode ser nulo");
+        }
+        this.nome = novoNome;
+    }
 }
