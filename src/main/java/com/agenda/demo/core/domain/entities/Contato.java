@@ -52,10 +52,9 @@ public class Contato {
         this.email = novoEmail;
     }
 
+    // Regra de Negócio: Atualizar nome
     public void atualizarNome(String novoNome) {
-        if (novoNome == null) {
-            throw new IllegalArgumentException("O novo nome não pode ser nulo");
-        }
+        validarNome(novoNome);
         this.nome = novoNome;
     }
 }

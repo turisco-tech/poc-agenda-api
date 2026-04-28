@@ -20,8 +20,7 @@ public class AtualizarContatoUseCase {
 
         // Atualizamos a entidade (O domínio garante as regras de validação)
         contato.atualizarEmail(new Email(request.email()));
-        // Aqui você precisaria de um setter validado para o nome na Entidade, ou criar um método 'atualizarNome'.
-        // Para o MVP, vamos atualizar o e-mail para provar o conceito.
+        contato.atualizarNome(request.nome());
 
         repository.salvar(contato);
 
