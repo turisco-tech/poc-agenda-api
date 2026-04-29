@@ -3,6 +3,7 @@ package com.agenda.demo.core.app.usecases;
 import com.agenda.demo.core.app.dtos.CriarContatoRequest;
 import com.agenda.demo.core.app.dtos.CriarContatoResponse;
 import com.agenda.demo.core.domain.entities.Contato;
+import com.agenda.demo.core.domain.ports.ContatoEventPublisher;
 import com.agenda.demo.core.domain.repos.ContatoRepository;
 import org.junit.jupiter.api.Test;
 import java.util.List;
@@ -37,7 +38,13 @@ class CriarContatoUseCaseTest {
 
             }
         };
-        CriarContatoUseCase useCase = new CriarContatoUseCase(fakeRepository);
+
+        // Cria um Publisher "Fake" que não faz nada (Dummy object)
+        ContatoEventPublisher fakePublisher = contato -> {
+            // No teste unitário, apenas fingimos que publicou
+        };
+
+        CriarContatoUseCase useCase = new CriarContatoUseCase(fakeRepository, fakePublisher);
         CriarContatoRequest request = new CriarContatoRequest("Marcos", "teste@teste.com");
 
         // 2. Act: Executa a ação
