@@ -9,67 +9,69 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout do código
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+      - name: Checkout do código
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - name: Setup Java 21 Corretto
-      uses: actions/setup-java@v3
-      with:
-        java-version: '21'
-        distribution: 'corretto'
-        cache: maven
+      - name: Setup Java 21 Corretto
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+          cache: maven
 
-    - name: Build e Análise SonarCloud
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=turisco-tech_poc-agenda-api -Dsonar.organization=turisco-tech -Dsonar.host.url=https://sonarcloud.io
+      - name: Build e Análise SonarCloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=turisco-tech_poc-agenda-api -Dsonar.organization=turisco-tech -Dsonar.host.url=https://sonarcloud.io
 
-    - name: Configurar Credenciais AWS
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+      - name: Configurar Credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }} # Confirme se esta secret existe no GitHub!
 
-    - name: Login no Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      - name: Login no Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build, Tag, e Push da Imagem
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: poc-agenda-api
-        IMAGE_TAG: ${{ github.sha }}
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+      - name: Build, Tag, e Push da Imagem
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: poc-agenda-api
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-    - name: Tratamento de Erros e Logs Críticos
-      if: failure()
-      run: |
-        echo "::error::Falha detectada na esteira! Coletando logs do ambiente de build..."
-        docker system df
-        docker ps -a
-        echo "Exibindo os últimos eventos do sistema para diagnóstico:"
-        dmesg | tail -n 20
+      - name: Tratamento de Erros e Logs Críticos
+        if: failure()
+        run: |
+          echo "::error::Falha detectada na esteira! Coletando logs do ambiente de build..."
+          docker system df
+          docker ps -a
+          echo "Exibindo os últimos eventos do sistema para diagnóstico:"
+          dmesg | tail -n 20
 
-    # NOVO PASSO 1: Injeta a nova imagem Docker gerada dentro do seu arquivo JSON
-    - name: Preencher o novo ID da imagem na Task Definition
-      id: render-task-def
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: .aws/task-definition.json
-        container-name: api-container # Nome exato do container definido na AWS
-        image: ${{ steps.login-ecr.outputs.registry }}/poc-agenda-api:${{ github.sha }}
+      - name: Preencher o novo ID da imagem e Variáveis na Task Definition
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: .aws/task-definition.json
+          container-name: api-container
+          image: ${{ steps.login-ecr.outputs.registry }}/poc-agenda-api:${{ github.sha }}
+          environment-variables: |
+            KAFKA_SERVER=${{ secrets.KAFKA_SERVER }}
+            KAFKA_USER=${{ secrets.KAFKA_USER }}
+            KAFKA_PASSWORD=${{ secrets.KAFKA_PASSWORD }}
 
-    # NOVO PASSO 2: Envia o JSON atualizado para a AWS e atualiza o Service
-    - name: Deploy da nova Task Definition no Amazon ECS
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      with:
-        task-definition: ${{ steps.render-task-def.outputs.task-definition }}
-        service: poc-agenda-api-service
-        cluster: poc-agenda-cluster
-        wait-for-service-stability: true
+      - name: Deploy da nova Task Definition no Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+          service: poc-agenda-api-service
+          cluster: poc-agenda-cluster
+          wait-for-service-stability: true
