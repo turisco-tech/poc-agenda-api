@@ -14,7 +14,7 @@ public class ContatoKafkaPublisher implements ContatoEventPublisher {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper; // O conversor JSON nativo do Spring
-    private static final String TOPICO = "contato-criado-events";
+    private static final String TOPICO = "contact-created";
 
     public ContatoKafkaPublisher(KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper) {
         this.kafkaTemplate = kafkaTemplate;
