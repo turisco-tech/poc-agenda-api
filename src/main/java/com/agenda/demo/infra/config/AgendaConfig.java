@@ -9,33 +9,37 @@ import com.agenda.demo.core.domain.repos.ContatoRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.core.ProducerFactory;
 
 @Configuration
 public class AgendaConfig {
 
-    //    @Bean
-//    public ProducerFactory<String, String> producerFactory() {
-//        Map<String, Object> configProps = new HashMap<>();
-//
-//        // 1. Onde o Kafka está rodando?
-//        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-//
-//        // 2. Como serializar a Chave da mensagem? (Vamos usar String)
-//        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-//
-//        // 3. Como serializar o Valor da mensagem? (Nosso JSON já foi convertido para String pelo ObjectMapper)
-//        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-//
-//        return new DefaultKafkaProducerFactory<>(configProps);
-//    }
-
+    // 1. Injetamos o "Environment" para ler as propriedades de nuvem dinamicamente
     @Bean
-    public KafkaTemplate<String, String> kafkaTemplate(ProducerFactory producerFactory) {
-        // Recebe a fábrica automática do Spring (já com a senha e a URL da Confluent)
-        // e apenas tipa ela para String, String, satisfazendo o seu Publisher!
-        return new KafkaTemplate<>(producerFactory);
+    public org.springframework.kafka.core.ProducerFactory<String, String> producerFactory(org.springframework.core.env.Environment env) {
+        java.util.Map<String, Object> configProps = new java.util.HashMap<>();
+
+        // Conexão com o servidor (Lê do application.properties / AWS)
+        configProps.put(org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                env.getProperty("spring.kafka.bootstrap-servers"));
+
+        // Serializadores String
+        configProps.put(org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+                org.apache.kafka.common.serialization.StringSerializer.class);
+        configProps.put(org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                org.apache.kafka.common.serialization.StringSerializer.class);
+
+        // Autenticação na Confluent Cloud
+        configProps.put("security.protocol", env.getProperty("spring.kafka.properties.security.protocol"));
+        configProps.put("sasl.mechanism", env.getProperty("spring.kafka.properties.sasl.mechanism"));
+        configProps.put("sasl.jaas.config", env.getProperty("spring.kafka.properties.sasl.jaas.config"));
+
+        return new org.springframework.kafka.core.DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    // 2. Criamos o Template tipado corretamente
+    @Bean
+    public org.springframework.kafka.core.KafkaTemplate<String, String> kafkaTemplate(org.springframework.core.env.Environment env) {
+        return new org.springframework.kafka.core.KafkaTemplate<>(producerFactory(env));
     }
 
     @Bean
