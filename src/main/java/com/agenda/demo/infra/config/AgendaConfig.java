@@ -7,39 +7,43 @@ import com.agenda.demo.core.app.usecases.ListarContatosUseCase;
 import com.agenda.demo.core.domain.ports.ContatoEventPublisher;
 import com.agenda.demo.core.domain.repos.ContatoRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.ProducerFactory;
+import java.util.HashMap;
 
 @Configuration
 public class AgendaConfig {
 
     // 1. Injetamos o "Environment" para ler as propriedades de nuvem dinamicamente
     @Bean
-    public org.springframework.kafka.core.ProducerFactory<String, String> producerFactory(org.springframework.core.env.Environment env) {
-        java.util.Map<String, Object> configProps = new java.util.HashMap<>();
+    public ProducerFactory<String, String> producerFactory(Environment env) {
+        java.util.Map<String, Object> configProps = new HashMap<>();
 
         // Conexão com o servidor (Lê do application.properties / AWS)
-        configProps.put(org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                env.getProperty("spring.kafka.bootstrap-servers"));
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, env.getProperty("spring.kafka.bootstrap-servers"));
 
         // Serializadores String
-        configProps.put(org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                org.apache.kafka.common.serialization.StringSerializer.class);
-        configProps.put(org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                org.apache.kafka.common.serialization.StringSerializer.class);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
         // Autenticação na Confluent Cloud
         configProps.put("security.protocol", env.getProperty("spring.kafka.properties.security.protocol"));
         configProps.put("sasl.mechanism", env.getProperty("spring.kafka.properties.sasl.mechanism"));
         configProps.put("sasl.jaas.config", env.getProperty("spring.kafka.properties.sasl.jaas.config"));
 
-        return new org.springframework.kafka.core.DefaultKafkaProducerFactory<>(configProps);
+        return new DefaultKafkaProducerFactory<>(configProps);
     }
 
     // 2. Criamos o Template tipado corretamente
     @Bean
-    public org.springframework.kafka.core.KafkaTemplate<String, String> kafkaTemplate(org.springframework.core.env.Environment env) {
-        return new org.springframework.kafka.core.KafkaTemplate<>(producerFactory(env));
+    public KafkaTemplate<String, String> kafkaTemplate(Environment env) {
+        return new KafkaTemplate<>(producerFactory(env));
     }
 
     @Bean
