@@ -9,11 +9,13 @@ import com.agenda.demo.core.domain.repos.ContatoRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.ProducerFactory;
 
 @Configuration
 public class AgendaConfig {
 
-//    @Bean
+    //    @Bean
 //    public ProducerFactory<String, String> producerFactory() {
 //        Map<String, Object> configProps = new HashMap<>();
 //
@@ -28,11 +30,13 @@ public class AgendaConfig {
 //
 //        return new DefaultKafkaProducerFactory<>(configProps);
 //    }
-//
-//    @Bean
-//    public KafkaTemplate<String, String> kafkaTemplate() {
-//        return new KafkaTemplate<>(producerFactory());
-//    }
+
+    @Bean
+    public KafkaTemplate<String, String> kafkaTemplate(ProducerFactory producerFactory) {
+        // Recebe a fábrica automática do Spring (já com a senha e a URL da Confluent)
+        // e apenas tipa ela para String, String, satisfazendo o seu Publisher!
+        return new KafkaTemplate<>(producerFactory);
+    }
 
     @Bean
     public ObjectMapper objectMapper() {
