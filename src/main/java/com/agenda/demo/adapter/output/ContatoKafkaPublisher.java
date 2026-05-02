@@ -2,6 +2,7 @@ package com.agenda.demo.adapter.output;
 
 import com.agenda.demo.core.domain.entities.Contato;
 import com.agenda.demo.core.domain.ports.ContatoEventPublisher;
+import com.agenda.demo.core.domain.vos.ContatoDeletadoEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +18,10 @@ public class ContatoKafkaPublisher implements ContatoEventPublisher {
     private final ObjectMapper objectMapper; // O conversor JSON nativo do Spring
 
     @Value("${app.kafka.topic.contact-created}") // Valor setado no git
-    private String TOPICO;
+    private String topicCreated;
+
+    @Value("${app.kafka.topic.contact-deleted}")
+    private String topicDeleted;
 
     public ContatoKafkaPublisher(KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper) {
         this.kafkaTemplate = kafkaTemplate;
@@ -37,11 +41,21 @@ public class ContatoKafkaPublisher implements ContatoEventPublisher {
             String payload = objectMapper.writeValueAsString(evento);
 
             // Envia a chave (ID) e o valor (JSON) para o Kafka
-            kafkaTemplate.send(TOPICO, contato.getId().toString(), payload);
+            kafkaTemplate.send(topicCreated, contato.getId().toString(), payload);
 
             System.out.println("🚀 Evento disparado para o Kafka: Contato " + contato.getNome() + " criado!");
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Erro ao serializar evento para o Kafka", e);
+        }
+    }
+
+    @Override
+    public void publicarExclusao(ContatoDeletadoEvent evento) {
+        try {
+            String payload = objectMapper.writeValueAsString(evento);
+            kafkaTemplate.send(topicDeleted, payload);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Erro ao serializar evento de exclusao", e);
         }
     }
 }

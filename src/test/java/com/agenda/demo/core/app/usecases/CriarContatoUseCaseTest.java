@@ -5,6 +5,7 @@ import com.agenda.demo.core.app.dtos.CriarContatoResponse;
 import com.agenda.demo.core.domain.entities.Contato;
 import com.agenda.demo.core.domain.ports.ContatoEventPublisher;
 import com.agenda.demo.core.domain.repos.ContatoRepository;
+import com.agenda.demo.core.domain.vos.ContatoDeletadoEvent;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Optional;
@@ -39,9 +40,26 @@ class CriarContatoUseCaseTest {
             }
         };
 
-        // Cria um Publisher "Fake" que não faz nada (Dummy object)
-        ContatoEventPublisher fakePublisher = contato -> {
-            // No teste unitário, apenas fingimos que publicou
+        // Cria um Publisher "Fake" implementando todos os métodos da interface
+        CriarContatoResponse response = getCriarContatoResponse(fakeRepository);
+
+        // 3. Assert: Verifica se o resultado é o esperado
+        assertNotNull(response.id());
+        assertEquals("Marcos", response.nome());
+        assertEquals("teste@teste.com", response.email());
+    }
+
+    private static CriarContatoResponse getCriarContatoResponse(ContatoRepository fakeRepository) {
+        ContatoEventPublisher fakePublisher = new ContatoEventPublisher() {
+            @Override
+            public void publicarContatoCriado(Contato contato) {
+                // No teste unitário, apenas fingimos que publicou
+            }
+
+            @Override
+            public void publicarExclusao(ContatoDeletadoEvent evento) {
+                // Não faz nada aqui, pois este é o teste de CRIAÇÃO
+            }
         };
 
         CriarContatoUseCase useCase = new CriarContatoUseCase(fakeRepository, fakePublisher);
@@ -49,10 +67,6 @@ class CriarContatoUseCaseTest {
 
         // 2. Act: Executa a ação
         CriarContatoResponse response = useCase.executar(request);
-
-        // 3. Assert: Verifica se o resultado é o esperado
-        assertNotNull(response.id());
-        assertEquals("Marcos", response.nome());
-        assertEquals("teste@teste.com", response.email());
+        return response;
     }
 }

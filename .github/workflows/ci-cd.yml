@@ -113,6 +113,7 @@ jobs:
             KAFKA_USER=${{ secrets.KAFKA_USER }}
             KAFKA_PASSWORD=${{ secrets.KAFKA_PASSWORD }}
             KAFKA_TOPIC=${{ secrets.KAFKA_TOPIC }}
+            KAFKA_TOPIC_DELETED=${{ secrets.KAFKA_TOPIC_DELETED }}
 
       - name: Deploy da nova Task Definition no Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1

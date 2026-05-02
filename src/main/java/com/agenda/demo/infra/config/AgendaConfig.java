@@ -69,8 +69,9 @@ public class AgendaConfig {
     }
 
     @Bean
-    public DeletarContatoUseCase deletarContatoUseCase(ContatoRepository repository) {
-        return new DeletarContatoUseCase(repository);
+    public DeletarContatoUseCase deletarContatoUseCase(ContatoRepository repository,
+                                                       ContatoEventPublisher eventPublisher) {
+        return new DeletarContatoUseCase(repository, eventPublisher);
     }
 
 }
