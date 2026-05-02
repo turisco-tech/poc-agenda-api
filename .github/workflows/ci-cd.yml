@@ -5,17 +5,19 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-test-sonar-push:
+  # ==========================================
+  # ESTÁGIO 1: Integração Contínua e Qualidade
+  # ==========================================
+  integration-and-quality:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout do código
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Setup Java 21 Corretto
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'corretto'
@@ -26,8 +28,29 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=turisco-tech_poc-agenda-api -Dsonar.organization=turisco-tech -Dsonar.host.url=https://sonarcloud.io
 
+  # ==========================================
+  # ESTÁGIO 2: Geração e Entrega da Imagem
+  # ==========================================
+  delivery-and-container:
+    needs: integration-and-quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # Recriar o artefato (.jar) pois estamos em uma nova máquina
+      - name: Setup Java 21 Corretto
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+          cache: maven
+
+      - name: Gerar artefato (.jar)
+        run: mvn clean package -DskipTests
+
       - name: Configurar Credenciais AWS
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -35,7 +58,7 @@ jobs:
 
       - name: Login no Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build, Tag, e Push da Imagem
         env:
@@ -55,6 +78,28 @@ jobs:
           docker ps -a
           echo "Exibindo os últimos eventos do sistema para diagnóstico:"
           dmesg | tail -n 20
+
+  # ==========================================
+  # ESTÁGIO 3: Deploy na AWS ECS
+  # ==========================================
+  deploy-to-aws:
+    needs: delivery-and-container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código (para ler o task-definition.json)
+        uses: actions/checkout@v4
+
+      - name: Configurar Credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Fazemos o login no ECR novamente para pegar a URL do cofre dinamicamente e evitar falhas de variáveis
+      - name: Login no Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Preencher o novo ID da imagem e Variáveis na Task Definition
         id: render-task-def
