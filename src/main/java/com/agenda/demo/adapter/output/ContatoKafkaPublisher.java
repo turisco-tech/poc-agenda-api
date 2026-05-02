@@ -17,7 +17,7 @@ public class ContatoKafkaPublisher implements ContatoEventPublisher {
     private final ObjectMapper objectMapper; // O conversor JSON nativo do Spring
 
     @Value("${app.kafka.topic.contact-created}") // Valor setado no git
-    private static String TOPICO;
+    private String TOPICO;
 
     public ContatoKafkaPublisher(KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper) {
         this.kafkaTemplate = kafkaTemplate;
