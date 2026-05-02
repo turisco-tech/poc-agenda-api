@@ -2,7 +2,7 @@ package com.agenda.demo.core.app.usecases;
 
 import com.agenda.demo.core.domain.ports.ContatoEventPublisher;
 import com.agenda.demo.core.domain.repos.ContatoRepository;
-import com.agenda.demo.core.domain.vos.ContatoDeletadoEvent;
+import com.agenda.demo.core.domain.events.ContatoDeletadoEvent;
 import java.util.UUID;
 
 public class DeletarContatoUseCase {

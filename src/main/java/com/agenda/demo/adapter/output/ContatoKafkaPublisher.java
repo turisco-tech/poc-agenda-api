@@ -2,7 +2,7 @@ package com.agenda.demo.adapter.output;
 
 import com.agenda.demo.core.domain.entities.Contato;
 import com.agenda.demo.core.domain.ports.ContatoEventPublisher;
-import com.agenda.demo.core.domain.vos.ContatoDeletadoEvent;
+import com.agenda.demo.core.domain.events.ContatoDeletadoEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;

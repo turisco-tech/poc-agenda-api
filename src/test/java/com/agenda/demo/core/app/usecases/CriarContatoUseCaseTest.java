@@ -5,7 +5,7 @@ import com.agenda.demo.core.app.dtos.CriarContatoResponse;
 import com.agenda.demo.core.domain.entities.Contato;
 import com.agenda.demo.core.domain.ports.ContatoEventPublisher;
 import com.agenda.demo.core.domain.repos.ContatoRepository;
-import com.agenda.demo.core.domain.vos.ContatoDeletadoEvent;
+import com.agenda.demo.core.domain.events.ContatoDeletadoEvent;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Optional;

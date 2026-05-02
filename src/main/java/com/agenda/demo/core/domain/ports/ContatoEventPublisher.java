@@ -1,7 +1,7 @@
 package com.agenda.demo.core.domain.ports;
 
 import com.agenda.demo.core.domain.entities.Contato;
-import com.agenda.demo.core.domain.vos.ContatoDeletadoEvent;
+import com.agenda.demo.core.domain.events.ContatoDeletadoEvent;
 
 public interface ContatoEventPublisher {
 

@@ -3,7 +3,7 @@ package com.agenda.demo.core.app.usecases;
 import com.agenda.demo.core.domain.entities.Contato;
 import com.agenda.demo.core.domain.ports.ContatoEventPublisher;
 import com.agenda.demo.core.domain.repos.ContatoRepository;
-import com.agenda.demo.core.domain.vos.ContatoDeletadoEvent;
+import com.agenda.demo.core.domain.events.ContatoDeletadoEvent;
 import com.agenda.demo.core.domain.vos.Email;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
