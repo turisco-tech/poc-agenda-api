@@ -4,6 +4,7 @@ import com.agenda.demo.core.domain.entities.Contato;
 import com.agenda.demo.core.domain.ports.ContatoEventPublisher;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import java.util.HashMap;
@@ -14,7 +15,9 @@ public class ContatoKafkaPublisher implements ContatoEventPublisher {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper; // O conversor JSON nativo do Spring
-    private static final String TOPICO = "contact-created";
+
+    @Value("${app.kafka.topic.contact-created}") // Valor setado no git
+    private static String TOPICO;
 
     public ContatoKafkaPublisher(KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper) {
         this.kafkaTemplate = kafkaTemplate;
