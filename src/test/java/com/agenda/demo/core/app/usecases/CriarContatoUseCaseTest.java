@@ -3,13 +3,13 @@ package com.agenda.demo.core.app.usecases;
 import com.agenda.demo.core.app.dtos.CriarContatoRequest;
 import com.agenda.demo.core.app.dtos.CriarContatoResponse;
 import com.agenda.demo.core.domain.entities.Contato;
-import com.agenda.demo.core.domain.ports.ContatoEventPublisher;
 import com.agenda.demo.core.domain.repos.ContatoRepository;
-import com.agenda.demo.core.domain.events.ContatoDeletadoEvent;
 import org.junit.jupiter.api.Test;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -50,19 +50,7 @@ class CriarContatoUseCaseTest {
     }
 
     private static CriarContatoResponse getCriarContatoResponse(ContatoRepository fakeRepository) {
-        ContatoEventPublisher fakePublisher = new ContatoEventPublisher() {
-            @Override
-            public void publicarContatoCriado(Contato contato) {
-                // No teste unitário, apenas fingimos que publicou
-            }
-
-            @Override
-            public void publicarExclusao(ContatoDeletadoEvent evento) {
-                // Não faz nada aqui, pois este é o teste de CRIAÇÃO
-            }
-        };
-
-        CriarContatoUseCase useCase = new CriarContatoUseCase(fakeRepository, fakePublisher);
+        CriarContatoUseCase useCase = new CriarContatoUseCase(fakeRepository);
         CriarContatoRequest request = new CriarContatoRequest("Marcos", "teste@teste.com");
 
         // 2. Act: Executa a ação

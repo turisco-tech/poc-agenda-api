@@ -4,7 +4,6 @@ import com.agenda.demo.core.app.usecases.AtualizarContatoUseCase;
 import com.agenda.demo.core.app.usecases.CriarContatoUseCase;
 import com.agenda.demo.core.app.usecases.DeletarContatoUseCase;
 import com.agenda.demo.core.app.usecases.ListarContatosUseCase;
-import com.agenda.demo.core.domain.ports.ContatoEventPublisher;
 import com.agenda.demo.core.domain.repos.ContatoRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -15,6 +14,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+
 import java.util.HashMap;
 
 @Configuration
@@ -52,10 +52,8 @@ public class AgendaConfig {
     }
 
     @Bean
-    public CriarContatoUseCase criarContatoUseCase(
-            ContatoRepository contatoRepository,
-            ContatoEventPublisher contatoEventPublisher) {
-        return new CriarContatoUseCase(contatoRepository, contatoEventPublisher);
+    public CriarContatoUseCase criarContatoUseCase(ContatoRepository contatoRepository) {
+        return new CriarContatoUseCase(contatoRepository);
     }
 
     @Bean
@@ -69,9 +67,8 @@ public class AgendaConfig {
     }
 
     @Bean
-    public DeletarContatoUseCase deletarContatoUseCase(ContatoRepository repository,
-                                                       ContatoEventPublisher eventPublisher) {
-        return new DeletarContatoUseCase(repository, eventPublisher);
+    public DeletarContatoUseCase deletarContatoUseCase(ContatoRepository repository) {
+        return new DeletarContatoUseCase(repository);
     }
 
 }

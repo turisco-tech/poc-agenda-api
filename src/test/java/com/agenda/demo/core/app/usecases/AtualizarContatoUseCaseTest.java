@@ -5,13 +5,14 @@ import com.agenda.demo.core.app.dtos.ContatoDTO;
 import com.agenda.demo.core.domain.entities.Contato;
 import com.agenda.demo.core.domain.repos.ContatoRepository;
 import com.agenda.demo.core.domain.vos.Email;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class AtualizarContatoUseCaseTest {
 
@@ -58,6 +59,20 @@ class AtualizarContatoUseCaseTest {
     @Test
     void deveLancarExcecaoQuandoContatoNaoExistir() {
         // Arrange
+        AtualizarContatoUseCase useCase = getAtualizarContatoUseCase();
+        AtualizarContatoRequest request = new AtualizarContatoRequest("Marcos", "novo@teste.com");
+
+        var id = UUID.randomUUID();
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            useCase.executar(id, request);
+        });
+
+        var errorMessage = "Contato não encontrado para o ID: " + id;
+        assertEquals(errorMessage, exception.getMessage());
+    }
+
+    private static @NonNull AtualizarContatoUseCase getAtualizarContatoUseCase() {
         ContatoRepository fakeRepository = new ContatoRepository() {
             @Override
             public Contato salvar(Contato contato) {
@@ -80,14 +95,6 @@ class AtualizarContatoUseCaseTest {
             }
         };
 
-        AtualizarContatoUseCase useCase = new AtualizarContatoUseCase(fakeRepository);
-        AtualizarContatoRequest request = new AtualizarContatoRequest("Marcos", "novo@teste.com");
-
-        // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            useCase.executar(UUID.randomUUID(), request);
-        });
-
-        assertEquals("Contato não encontrado", exception.getMessage());
+        return new AtualizarContatoUseCase(fakeRepository);
     }
 }

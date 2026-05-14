@@ -1,9 +1,7 @@
 package com.agenda.demo.core.app.usecases;
 
 import com.agenda.demo.core.domain.entities.Contato;
-import com.agenda.demo.core.domain.ports.ContatoEventPublisher;
 import com.agenda.demo.core.domain.repos.ContatoRepository;
-import com.agenda.demo.core.domain.events.ContatoDeletadoEvent;
 import com.agenda.demo.core.domain.vos.Email;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
@@ -27,9 +25,18 @@ class DeletarContatoUseCaseTest {
         Contato contatoMock = new Contato(idParaDeletar, "João", emailFake);
 
         final boolean[] deletadoNoBanco = {false};
-        final boolean[] eventoPublicado = {false};
 
         // Fake do Repository
+        DeletarContatoUseCase useCase = getDeletarContatoUseCase(idParaDeletar, contatoMock, deletadoNoBanco);
+
+        // Act
+        useCase.executar(idParaDeletar);
+
+        // Assert
+        assertTrue(deletadoNoBanco[0], "O método deletar do repositório deveria ter sido chamado com o ID correto");
+    }
+
+    private static @NonNull DeletarContatoUseCase getDeletarContatoUseCase(UUID idParaDeletar, Contato contatoMock, boolean[] deletadoNoBanco) {
         ContatoRepository fakeRepository = new ContatoRepository() {
             @Override
             public Optional<Contato> buscarPorId(UUID id) {
@@ -58,39 +65,11 @@ class DeletarContatoUseCaseTest {
         };
 
         // Fake do Publisher
-        DeletarContatoUseCase useCase = getDeletarContatoUseCase(idParaDeletar, eventoPublicado, fakeRepository);
-
-        // Act
-        useCase.executar(idParaDeletar);
-
-        // Assert
-        assertTrue(deletadoNoBanco[0], "O método deletar do repositório deveria ter sido chamado com o ID correto");
-        assertTrue(eventoPublicado[0], "O evento de exclusão deveria ter sido publicado com os dados corretos no publisher");
+        return getDeletarContatoUseCase(fakeRepository);
     }
 
-    private static @NonNull DeletarContatoUseCase getDeletarContatoUseCase(UUID idParaDeletar,
-                                                                           boolean[] eventoPublicado,
-                                                                           ContatoRepository fakeRepository) {
-        ContatoEventPublisher fakePublisher = new ContatoEventPublisher() {
-            @Override
-            public void publicarContatoCriado(Contato contato) {
-
-            }
-
-            @Override
-            public void publicarExclusao(ContatoDeletadoEvent evento) {
-                // Verificamos se o evento foi gerado com os dados corretos da entidade
-                if (evento.id().equals(idParaDeletar.toString()) &&
-                        evento.email().equals("joao@teste.com")) {
-                    eventoPublicado[0] = true;
-                }
-            }
-
-            // Se houver outros métodos na interface (como publicarCriacao), adicione-os aqui retornando vazio
-        };
-
+    private static @NonNull DeletarContatoUseCase getDeletarContatoUseCase(ContatoRepository fakeRepository) {
         // Instanciamos injetando as duas portas de saída!
-        DeletarContatoUseCase useCase = new DeletarContatoUseCase(fakeRepository, fakePublisher);
-        return useCase;
+        return new DeletarContatoUseCase(fakeRepository);
     }
 }

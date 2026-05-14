@@ -2,30 +2,22 @@ package com.agenda.demo.adapter.input;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.core.ProducerFactory;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.web.servlet.MockMvc;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+// 1. Trocamos @SpringBootTest por @WebMvcTest passando apenas o Controller alvo!
+@WebMvcTest(HealthCheckController.class)
 class HealthCheckControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    // Cria um "dublê" do KafkaTemplate para o Spring Context carregar em paz
-    @MockitoBean
-    private KafkaTemplate<String, String> kafkaTemplate;
-
-    // Cria um "dublê" do ProducerFactory para o Spring Context carregar em paz
-    @MockitoBean
-    private ProducerFactory<String, String> producerFactory;
+    // 2. Os "dublês" (@MockitoBean) do Kafka foram removidos porque o Spring
+    // não vai nem tentar carregar a mensageria ou o banco de dados nesta fatia (slice).
 
     @Test
     void deveRetornarStatusDaApi() throws Exception {

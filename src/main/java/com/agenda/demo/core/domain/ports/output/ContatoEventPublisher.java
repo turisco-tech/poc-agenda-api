@@ -1,4 +1,4 @@
-package com.agenda.demo.core.domain.ports;
+package com.agenda.demo.core.domain.ports.output;
 
 import com.agenda.demo.core.domain.entities.Contato;
 import com.agenda.demo.core.domain.events.ContatoDeletadoEvent;
@@ -9,6 +9,5 @@ public interface ContatoEventPublisher {
     // Quem vai implementar e como (Kafka, RabbitMQ, etc) não é problema dele!
     void publicarContatoCriado(Contato contato);
 
-
-    void publicarExclusao(ContatoDeletadoEvent evento);
+    void publicarContatoExcluido(ContatoDeletadoEvent evento);
 }

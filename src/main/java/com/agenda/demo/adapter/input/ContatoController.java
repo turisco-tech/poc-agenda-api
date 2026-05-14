@@ -8,17 +8,10 @@ import com.agenda.demo.core.app.usecases.AtualizarContatoUseCase;
 import com.agenda.demo.core.app.usecases.CriarContatoUseCase;
 import com.agenda.demo.core.app.usecases.DeletarContatoUseCase;
 import com.agenda.demo.core.app.usecases.ListarContatosUseCase;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import java.net.URI;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -45,20 +38,19 @@ public class ContatoController {
     @PostMapping
     public ResponseEntity<CriarContatoResponse> criar(@RequestBody CriarContatoRequest request) {
         CriarContatoResponse response = criarContatoUseCase.executar(request);
-
-        // Retorna 201 Created com a URI do novo recurso e o corpo da resposta
-        return ResponseEntity.created(URI.create("/api/contatos/" + response.id())).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
-    public ResponseEntity<List<ContatoDTO>> listar() {
-        return ResponseEntity.ok(listarContatosUseCase.executar());
+    public ResponseEntity<List<ContatoDTO>> listarTodos() {
+        List<ContatoDTO> contatos = listarContatosUseCase.executar();
+        return ResponseEntity.ok(contatos);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ContatoDTO> atualizar(@PathVariable UUID id,
-                                                @RequestBody AtualizarContatoRequest request) {
-        return ResponseEntity.ok(atualizarContatoUseCase.executar(id, request));
+    public ResponseEntity<ContatoDTO> atualizar(@PathVariable UUID id, @RequestBody AtualizarContatoRequest request) {
+        ContatoDTO response = atualizarContatoUseCase.executar(id, request);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
